@@ -1,17 +1,29 @@
 apikeys = __import__('apikeys')
-import twitter
-api = twitter.Api(consumer_key=apikeys.consumer_key, consumer_secret=apikeys.consumer_secret,access_token_key=apikeys.access_token_key, access_token_secret=apikeys.access_token_secret)
-if ( not api.VerifyCredentials() ):
-    print("Fail!")
-else:
-    print("Yep")
+from twitter import *
+t = Twitter(auth=OAuth(apikeys.access_token_key, apikeys.access_token_secret,apikeys.consumer_key, apikeys.consumer_secret))
+t.statuses.home_timeline()
+print(t)
+
+# t.application.rate_limit_status()
+friends = t.friends.ids()
+# api = twitter.Api(consumer_key=apikeys.consumer_key, consumer_secret=apikeys.consumer_secret,access_token_key=apikeys.access_token_key, access_token_secret=apikeys.access_token_secret)
+# if ( not api.VerifyCredentials() ):
+#     print("Fail!")
+# else:
+#     print("Yep")
 
 import pymongo
 from pymongo import MongoClient
 client = MongoClient('localhost', 27017)
 db = client.twapi
-
 friends_coll = db.friends
+
+#friends_coll.insert_many([{'twitter_user_id': f_id} for f_id in friends['ids'] ])
+
+a = friends_coll.find_one()
+
+
+
 
 # import datetime
 # post = {"author": "Mike",
