@@ -2,7 +2,7 @@ apikeys = __import__('apikeys')
 from twitter import *
 t = Twitter(auth=OAuth(apikeys.access_token_key, apikeys.access_token_secret,apikeys.consumer_key, apikeys.consumer_secret))
 
-
+api_limit_reset_in_millis = 900100 # 15 minutes in millis
 
 
 t.statuses.home_timeline()
@@ -25,15 +25,30 @@ friends_coll = db.friends
 #friends_coll.insert_many([{'twitter_user_id': f_id} for f_id in friends['ids'] ])
 
 tweets_coll = db.tweets
-a = friends_coll.find()
+
+# need to find those people with no tweets stored
+
+# 1. find people with tweets and take those as a list
+peeps_with_tweets = []
+pwt = tweets_coll.find().distinct("twitter_user_id")
+for i in pwt:
+    peeps_with_tweets.append(i)
+
+a = friends_coll.find({ 'twitter_user_id': { '$nin': peeps_with_tweets } })
+
 def getTweetsForUsers(users_array):
     print("Starting to fetch tweets for users.. \n\n")
     for user in users_array:
         twuid = user['twitter_user_id']
         print("Fetching tweets for user ",str(twuid))
-        st = t.statuses.user_timeline(user_id=twuid)
-        tweets_coll.insert_many([{'twitter_user_id': twuid, 'raw_tweet': tweet} for tweet in st ])
-        print("Done storing all tweets for user. \n")
+        try:
+            st = t.statuses.user_timeline(user_id=twuid)
+            tweets_coll.insert_many([{'twitter_user_id': twuid, 'raw_tweet': tweet} for tweet in st ])
+            print("Done storing all tweets for user. \n")
+        except:
+            from time import sleep
+            print("\n\n\n Problem! \n\n\n Waiting 15 minutes due to probable API limit reached.")
+            sleep(api_limit_reset_in_millis)
 # done
 
 getTweetsForUsers(a)
