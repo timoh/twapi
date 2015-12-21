@@ -27,13 +27,22 @@ tweets_coll = db.tweets
 
 # need to find those people with no tweets stored
 
-# 1. find people with tweets and take those as a list
-peeps_with_tweets = []
-pwt = tweets_coll.find().distinct("twitter_user_id")
-for i in pwt:
-    peeps_with_tweets.append(i)
+all_users = friends_coll.find().count()
+print("Amount of friends, total: ",str(all_users))
 
-a = friends_coll.find({ 'twitter_user_id': { '$nin': peeps_with_tweets } })
+tweet_count = tweets_coll.find().count()
+print("Amount of tweets stored, total:" ,str(tweet_count))
+
+# 1. find people with tweets and take those as a list
+peeps_set = set()
+pwt = tweets_coll.find()
+for i in pwt:
+    peeps_set.add(i['twitter_user_id'])
+
+peeps_with_tweets = []
+peeps_with_tweets = list(peeps_set)
+
+a = friends_coll.find({ 'twitter_user_id': { '$nin': peeps_with_tweets } }) # this doesn't work as expected, still returns all users..
 
 def getTweetsForUsers(users_array):
     total_num = users_array.count()
@@ -43,15 +52,21 @@ def getTweetsForUsers(users_array):
         counter = counter+1
         print("Operation ", str(counter), " of ", str(total_num), " operations total.")
         twuid = str(user['twitter_user_id'])
-        print("Fetching tweets for user ",str(twuid))
-        try:
-            st = t.statuses.user_timeline(user_id=twuid)
-            tweets_coll.insert_many([{'twitter_user_id': twuid, 'raw_tweet': tweet} for tweet in st ])
-            print("Done storing all tweets for user. \n")
-        except:
-            from time import sleep
-            print("\n\n\n Problem! \n\n\n Waiting 15 minutes due to probable API limit reached.")
-            sleep(api_limit_reset_in_millis)
+        if twuid not in peeps_with_tweets:
+            print("Fetching tweets for user ",str(twuid))
+            try:
+                st = t.statuses.user_timeline(user_id=twuid)
+                tweets_coll.insert_many([{'twitter_user_id': twuid, 'raw_tweet': tweet} for tweet in st ])
+                print("Done storing all tweets for user. \n")
+            except KeyboardInterrupt:
+                print("Interrupted by user. Exiting.")
+                pass
+                break
+            except:
+                from time import sleep
+                print("\n\n\n Problem! \n\n\n Waiting 15 minutes due to probable API limit reached.")
+                print("Error:", sys.exc_info()[0])
+                sleep(api_limit_reset_in_millis)
 # done
 
 getTweetsForUsers(a)
