@@ -36,9 +36,13 @@ for i in pwt:
 a = friends_coll.find({ 'twitter_user_id': { '$nin': peeps_with_tweets } })
 
 def getTweetsForUsers(users_array):
-    print("Starting to fetch tweets for users.. \n\n")
+    total_num = users_array.count()
+    print("Starting to fetch tweets for ", str(total_num), " users.. \n\n")
+    counter = 0
     for user in users_array:
-        twuid = user['twitter_user_id']
+        counter = counter+1
+        print("Operation ", str(counter), " of ", str(total_num), " operations total.")
+        twuid = str(user['twitter_user_id'])
         print("Fetching tweets for user ",str(twuid))
         try:
             st = t.statuses.user_timeline(user_id=twuid)
