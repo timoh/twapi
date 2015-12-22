@@ -44,6 +44,22 @@ peeps_with_tweets = list(peeps_set)
 
 a = friends_coll.find({ 'twitter_user_id': { '$nin': peeps_with_tweets } }) # this doesn't work as expected, still returns all users..
 
+
+def printingSleeper(millis):
+    total_time = millis
+    from time import sleep
+    import datetime
+    time_now = datetime.datetime.now().time().strftime('%H:%S')
+    print("Starting to sleep a total of ", str(total_time/100/60), "minutes. Time now: ",str(time_now), ".")
+    fractions = 25
+    fractional_time = int(millis/fractions)
+    counter = 0
+    while counter < fractions:
+        time_remaining = total_time - ( fractional_time * (fractions-counter) )
+        print("Sleeping still for ", str(time_remaining/100/60), " minutes.")
+        counter = counter+1
+        sleep(fractional_time)
+
 def getTweetsForUsers(users_array):
     total_num = users_array.count()
     print("Starting to fetch tweets for ", str(total_num), " users.. \n\n")
@@ -69,7 +85,7 @@ def getTweetsForUsers(users_array):
                 from time import sleep
                 print("\n\n\n Problem! \n\n\n Waiting 15 minutes due to probable API limit reached.")
                 print("Error: ", err)
-                sleep(api_limit_reset_in_millis)
+                printingSleeper(api_limit_reset_in_millis)
             except:
                 import sys
                 print("Error:", sys.exc_info()[0])
