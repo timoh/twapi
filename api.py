@@ -2,7 +2,7 @@ apikeys = __import__('apikeys')
 from twitter import *
 t = Twitter(auth=OAuth(apikeys.access_token_key, apikeys.access_token_secret,apikeys.consumer_key, apikeys.consumer_secret))
 
-api_limit_reset_in_millis = 900100 # 15 minutes in millis
+api_limit_reset_in_millis = 5000 # 15 minutes in millis?
 
 
 #t.statuses.home_timeline()
@@ -50,13 +50,16 @@ def printingSleeper(millis):
     from time import sleep
     import datetime
     time_now = datetime.datetime.now().time().strftime('%H:%S')
-    print("Starting to sleep a total of ", str(total_time/100/60), "minutes. Time now: ",str(time_now), ".")
-    fractions = 25
+    diff = datetime.timedelta(milliseconds=total_time)
+    projected_end_time = ((datetime.datetime.now()+diff).time().strftime('%H:%S'))
+    print("Starting to sleep a total of ", str(total_time/1000/60), "minutes. Time now: ",str(time_now), ". Time at the end: ",str(projected_end_time))
+    fractions = 500
     fractional_time = int(millis/fractions)
     counter = 0
     while counter < fractions:
-        time_remaining = total_time - ( fractional_time * (fractions-counter) )
-        print("Sleeping still for ", str(time_remaining/100/60), " minutes.")
+        time_remaining = total_time - ( fractional_time * (counter) )
+        print("Now sleeping for ", str(fractional_time/1000), " seconds.")
+        print("Total sleep remaining: ", str(time_remaining/1000/60), " minutes.")
         counter = counter+1
         sleep(fractional_time)
 
