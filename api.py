@@ -56,18 +56,23 @@ def getTweetsForUsers(users_array):
             print("Fetching tweets for user ",str(twuid))
             try:
                 st = t.statuses.user_timeline(user_id=twuid)
-                tweets_coll.insert_many([{'twitter_user_id': twuid, 'raw_tweet': tweet} for tweet in st ])
-                print("Done storing all tweets for user. \n")
+                if len(st) > 0:
+                    tweets_coll.insert_many([{'twitter_user_id': twuid, 'raw_tweet': tweet} for tweet in st ])
+                    print("Done storing all tweets for user. \n")
+                else:
+                    print("No tweets to store for this user.")
             except KeyboardInterrupt:
                 print("Interrupted by user. Exiting.")
                 pass
                 break
-            except:
+            except Exception as err:
                 from time import sleep
                 print("\n\n\n Problem! \n\n\n Waiting 15 minutes due to probable API limit reached.")
+                print("Error: ", err)
+                sleep(api_limit_reset_in_millis)
+            except:
                 import sys
                 print("Error:", sys.exc_info()[0])
-                sleep(api_limit_reset_in_millis)
 # done
 
 getTweetsForUsers(a)
