@@ -2,7 +2,7 @@ apikeys = __import__('apikeys')
 from twitter import *
 t = Twitter(auth=OAuth(apikeys.access_token_key, apikeys.access_token_secret,apikeys.consumer_key, apikeys.consumer_secret))
 
-api_limit_reset_in_millis = 5000 # 15 minutes in millis?
+api_limit_reset_in_seconds = 900 # 15 minutes in seconds
 
 
 #t.statuses.home_timeline()
@@ -45,21 +45,21 @@ peeps_with_tweets = list(peeps_set)
 a = friends_coll.find({ 'twitter_user_id': { '$nin': peeps_with_tweets } }) # this doesn't work as expected, still returns all users..
 
 
-def printingSleeper(millis):
-    total_time = millis
+def printingSleeper(secs):
+    total_time = secs
     from time import sleep
     import datetime
     time_now = datetime.datetime.now().time().strftime('%H:%S')
     diff = datetime.timedelta(milliseconds=total_time)
     projected_end_time = ((datetime.datetime.now()+diff).time().strftime('%H:%S'))
-    print("Starting to sleep a total of ", str(total_time/1000/60), "minutes. Time now: ",str(time_now), ". Time at the end: ",str(projected_end_time))
-    fractions = 500
-    fractional_time = int(millis/fractions)
+    print("Starting to sleep a total of ", str(total_time/60), "minutes. Time now: ",str(time_now), ". Time at the end: ",str(projected_end_time))
+    fractions = 60
+    fractional_time = int(total_time/fractions)
     counter = 0
     while counter < fractions:
         time_remaining = total_time - ( fractional_time * (counter) )
-        print("Now sleeping for ", str(fractional_time/1000), " seconds.")
-        print("Total sleep remaining: ", str(time_remaining/1000/60), " minutes.")
+        print("Now sleeping for ", str(fractional_time), " seconds.")
+        print("Total sleep remaining: ", str(time_remaining/60), " minutes.")
         counter = counter+1
         sleep(fractional_time)
 
@@ -92,11 +92,15 @@ def getTweetsForUsers(users_array):
             except:
                 import sys
                 print("Error:", sys.exc_info()[0])
+    if total_num <= counter:
+        print("Fetching all tweets for all uses completed successfully!")
+    else:
+        print("Fetching aborted.")
 # done
 
 getTweetsForUsers(a)
 
-print("Fetching all tweets for all uses completed successfully!")
+
 
 
 
