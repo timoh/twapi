@@ -65,6 +65,7 @@ def getTweetsForUsers(users_array):
             except:
                 from time import sleep
                 print("\n\n\n Problem! \n\n\n Waiting 15 minutes due to probable API limit reached.")
+                import sys
                 print("Error:", sys.exc_info()[0])
                 sleep(api_limit_reset_in_millis)
 # done
